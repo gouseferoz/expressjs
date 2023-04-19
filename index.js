@@ -2,45 +2,18 @@ const express = require('express')
 
 const app = express()
 
-const User = require('./services/user')
-const userObj = new User()
+const userRoutes = require('./routes/user')
+const adminRoutes = require('./routes/admin')
 
 app.use(express.json())
 
 app.get('/', (req, res) => {
     res.send({
-        "name":"Feroz"
+        "message":"Welcome to My API"
     })
 })
 
-app.post('/postURL', (req, res) => {
-    res.json(req.body)
-})
-
-app.get('/user', (req, res) => {
-
-    let user = userObj.getUsers()
-
-    res.send(user)
-})
-
-app.get('/getUser/:id', (req, res) => {
-    let user = userObj.getUserById(req.params.id)
-    res.send(user)
-})
-
-app.get('/getUserByName/:name', (req, res) => {
-    let user = userObj.getUserByName(req.params.name)
-    res.send(user)
-})
-
-app.get('/usersCount', (req, res) => {
-    res.json(userObj.getUsersCount())
-})
-
-app.post('/addUser', (req, res) => {
-    res.json(userObj.addNewUser(req.body))
-})
-
+app.use('/user', userRoutes)
+app.use('/admin', adminRoutes)
 
 app.listen(3000)
