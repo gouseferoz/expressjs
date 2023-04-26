@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-
+const auth = require('../utils/auth')
 const User = require('../services/user')
 const userObj = new User()
 
@@ -9,7 +9,7 @@ router.get('/', (req, res) => {
     res.send(user)
 })
 
-router.get('/getById/:id', (req, res) => {
+router.get('/getById/:id', auth, (req, res) => {
     let user = userObj.getUserById(req.params.id)
     res.send(user)
 })
