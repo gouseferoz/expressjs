@@ -1,3 +1,6 @@
+const jwt = require('jsonwebtoken');
+
+const mysql = require('../utils/mysql')
 
 const userDetails = [
     {
@@ -45,6 +48,42 @@ class User {
         //Adds a new user
         userDetails.push(data)
         return userDetails
+    }
+
+    async getToken() {
+
+        let tokenData = {
+            "name": "Ashish",
+            "college": "VJIT",
+            "role": "student"
+        }
+
+        let token = jwt.sign(tokenData, process.env.JWT_SIGN_KEY, {expiresIn: 10})
+
+        return token
+
+    }
+
+    async getUsers(count) {
+        try {
+
+            let users = await new Promise((resolve, reject) => {
+                mysql.query('select first_name, email from users limit ?', [Number(count)], (err, result) => {
+                    if(err) {
+                        console.log(err)
+                        reject(err)
+                    } else {
+                        resolve(result)
+                    }
+
+                })
+            })
+
+            return users
+
+        } catch (error) {
+            console.log(error)
+        }
     }
 
 }
