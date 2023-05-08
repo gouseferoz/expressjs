@@ -2,6 +2,8 @@ const jwt = require('jsonwebtoken');
 
 const mysql = require('../utils/mysql')
 
+const redis = require('../utils/redis')
+
 const userDetails = [
     {
         id: 1,
@@ -67,19 +69,33 @@ class User {
     async getUsers(count) {
         try {
 
-            let users = await new Promise((resolve, reject) => {
-                mysql.query('select first_name, email from users limit ?', [Number(count)], (err, result) => {
-                    if(err) {
-                        console.log(err)
-                        reject(err)
-                    } else {
-                        resolve(result)
-                    }
-
-                })
+            let cached_users = await new Promise((resv,rej) => {
+                redis.get("users", (err, reply) => {
+                  resv(reply);
+                });
             })
 
-            return users
+            if(cached_users) {
+                return JSON.parse(cached_users)
+            } else {
+                let users = await new Promise((resolve, reject) => {
+                    mysql.query('select first_name, email from users limit 10', [Number(count)], (err, result) => {
+                        if(err) {
+                            console.log(err)
+                            reject(err)
+                        } else {
+                            resolve(result)
+                        }
+
+                    })
+                })
+
+                redis.SETEX("users", 30, JSON.stringify(users), (err, reply) => {
+                    if(err) throw err;
+                })
+
+                return users
+            }
 
         } catch (error) {
             console.log(error)
